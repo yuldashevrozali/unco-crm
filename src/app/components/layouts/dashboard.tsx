@@ -26,13 +26,13 @@ export default function DashboardLayout({
   const router = useRouter();
 
   const menuItems = [
-    { key: "/lidlar", icon: <UserOutlined />, label: "Lidlar" },
-    { key: "/oquvchilar", icon: <TeamOutlined />, label: "O‘quvchilar" },
-    { key: "/guruhlar", icon: <BookOutlined />, label: "Guruhlar" },
-    { key: "/tolovlar", icon: <DollarOutlined />, label: "To‘lovlar" },
-    { key: "/xodimlar", icon: <TeamOutlined />, label: "Xodimlar" },
-    { key: "/dars-jadvali", icon: <CalendarOutlined />, label: "Dars jadvali" },
-    { key: "/hisobotlar", icon: <FileTextOutlined />, label: "Hisobotlar" },
+    { key: "/lids", icon: <UserOutlined />, label: "Lidlar" },
+    { key: "/students", icon: <TeamOutlined />, label: "O‘quvchilar" },
+    { key: "/groups", icon: <BookOutlined />, label: "Guruhlar" },
+    { key: "/payments", icon: <DollarOutlined />, label: "To‘lovlar" },
+    { key: "/employees", icon: <TeamOutlined />, label: "Xodimlar" },
+    { key: "/table", icon: <CalendarOutlined />, label: "Dars jadvali" },
+    { key: "/statistic", icon: <FileTextOutlined />, label: "Hisobotlar" },
   ];
 
   const handleLogout = () => {

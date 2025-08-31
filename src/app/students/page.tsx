@@ -1,6 +1,7 @@
+import DashboardLayout from "../components/layouts/dashboard";
 
 export default function page() {
   return (
-    <div>page</div>
+    <DashboardLayout>page</DashboardLayout>
   )
 }
