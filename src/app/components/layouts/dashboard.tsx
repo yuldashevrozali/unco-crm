@@ -1,8 +1,6 @@
 "use client";
 
-import { Layout, Menu, Button, Input } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
-
+import { Layout, Menu, Button } from "antd";
 import {
   UserOutlined,
   TeamOutlined,
@@ -14,6 +12,7 @@ import {
 } from "@ant-design/icons";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const { Header, Sider, Content } = Layout;
 
@@ -25,7 +24,20 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
 
+  const [user, setUser] = useState<{ username: string; role: string } | null>(
+    null
+  );
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser);
+      setUser(parsed.user); // ✅ faqat user obyektini saqladik
+    }
+  }, []);
+
   const menuItems = [
+    { key: "/", icon: <UserOutlined />, label: "Profil" },
     { key: "/lids", icon: <UserOutlined />, label: "Lidlar" },
     { key: "/students", icon: <TeamOutlined />, label: "O‘quvchilar" },
     { key: "/groups", icon: <BookOutlined />, label: "Guruhlar" },
@@ -36,7 +48,7 @@ export default function DashboardLayout({
   ];
 
   const handleLogout = () => {
-    // TODO: tokenni tozalash
+    localStorage.removeItem("user"); // foydalanuvchini o‘chirish
     router.push("/signin");
   };
 
@@ -85,7 +97,25 @@ export default function DashboardLayout({
               alt="user"
               className="rounded-full w-10 h-10 border-2 border-indigo-500 shadow-md"
             />
-            <span className="font-medium text-gray-700">Admin</span>
+           <div className="flex flex-col items-start">
+  <span className="text-white font-semibold text-base tracking-wide">
+    {user ? user.username : "Guest"}
+  </span>
+  <span
+    className={`mt-0.5 text-xs font-medium px-2 py-0.5 rounded-full ${
+      user?.role === "director"
+        ? "bg-green-100 text-green-700"
+        : user?.role === "admin"
+        ? "bg-purple-100 text-purple-700"
+        : user?.role === "teacher"
+        ? "bg-blue-100 text-blue-700"
+        : "bg-gray-100 text-gray-600"
+    }`}
+  >
+    {user ? user.role : "no-role"}
+  </span>
+</div>
+
             <Button
               type="primary"
               danger

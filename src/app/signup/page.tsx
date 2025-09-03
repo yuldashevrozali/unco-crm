@@ -1,17 +1,54 @@
 "use client";
 
 import Image from "next/image";
-import { Form, Input, Select, Button, Typography, Card, message } from "antd";
-
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Form, Input, Select, Button, Typography, Card, Alert } from "antd";
 import authSvg from "../../../public/auth.svg";
 
 const { Title, Paragraph } = Typography;
 const { Option } = Select;
 
 export default function Signup() {
+  const [form] = Form.useForm();
+  const router = useRouter();
 
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
- 
+  // ✅ Formani yuborish
+  const onFinish = async (values: any) => {
+    try {
+      const res = await fetch("https://unco-backend.onrender.com/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
+
+      if (!res.ok) {
+        throw new Error("Xatolik yuz berdi!");
+      }
+
+      const data = await res.json();
+
+      // ✅ LocalStorage ga yozish
+      localStorage.setItem("user", JSON.stringify(data));
+
+      setSuccess(true);
+      setError(null);
+      form.resetFields();
+
+      // ✅ 2 soniyadan keyin signin sahifasiga o‘tkazish
+      setTimeout(() => {
+        router.push("/signin");
+      }, 2000);
+    } catch (err: any) {
+      setError(err.message || "Ro‘yxatdan o‘tishda xatolik!");
+      setSuccess(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-6">
@@ -19,27 +56,39 @@ export default function Signup() {
         {/* Chap qism - Form */}
         <Card className="shadow-lg rounded-xl p-8">
           <div className="text-center mb-6">
-            <Title
-              level={2}
-              style={{ color: "#252525", fontWeight: 700, fontSize: "40px" }}
-            >
+            <Title level={2} style={{ color: "#252525", fontWeight: 700, fontSize: "40px" }}>
               Xush kelibsiz!
             </Title>
-            <Paragraph
-              style={{
-                color: "#4B4B4B",
-                fontSize: "18px",
-                marginBottom: "20px",
-              }}
-            >
+            <Paragraph style={{ color: "#4B4B4B", fontSize: "18px", marginBottom: "20px" }}>
               Login va parol yasab Sign In sahifasiga o‘ting.
             </Paragraph>
           </div>
 
+          {/* ✅ Muvaffaqiyatli yoki xato alert */}
+          {success && (
+            <Alert
+              message="Tabriklaymiz! Siz muvaffaqiyatli ro‘yxatdan o‘tdingiz 🎉"
+              type="success"
+              showIcon
+              closable
+              className="mb-4"
+            />
+          )}
+          {error && (
+            <Alert
+              message={error}
+              type="error"
+              showIcon
+              closable
+              className="mb-4"
+            />
+          )}
+
           <Form
             layout="vertical"
-          
-            initialValues={{ role: "teacher" }} // default qiymat
+            form={form}
+            initialValues={{ role: "teacher" }}
+            onFinish={onFinish} // ✅ submit event
           >
             {/* Ism */}
             <Form.Item
@@ -100,11 +149,7 @@ export default function Signup() {
 
         {/* O‘ng qism - Rasm */}
         <div className="hidden md:flex justify-center">
-          <Image
-            src={authSvg}
-            alt="Avtorizatsiya rasmi"
-            className="max-w-md w-full"
-          />
+          <Image src={authSvg} alt="Avtorizatsiya rasmi" className="max-w-md w-full" />
         </div>
       </div>
     </div>
