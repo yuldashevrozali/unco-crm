@@ -11,12 +11,17 @@ interface PaymentModalProps {
   students: { _id: string; name: string; group: string }[];
 }
 
-export default function PaymentModal({ open, onClose, onSubmit, students }: PaymentModalProps) {
+export default function PaymentModal({
+  open,
+  onClose,
+  onSubmit,
+  students,
+}: PaymentModalProps) {
   const [form] = Form.useForm();
 
   useEffect(() => {
     if (!open) {
-      form.resetFields(); // modal yopilganda tozalash
+      form.resetFields(); // modal yopilganda formani tozalash
     }
   }, [open, form]);
 
@@ -44,7 +49,13 @@ export default function PaymentModal({ open, onClose, onSubmit, students }: Paym
       onCancel={onClose}
       onOk={handleOk}
     >
-      <Form form={form} layout="vertical">
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{
+          date: dayjs(), // boshlang‘ich qiymat
+        }}
+      >
         {/* Student tanlash */}
         <Form.Item
           label="O‘quvchi"
@@ -79,11 +90,7 @@ export default function PaymentModal({ open, onClose, onSubmit, students }: Paym
           name="date"
           rules={[{ required: true, message: "Sanani tanlang!" }]}
         >
-          <DatePicker
-            format="YYYY-MM-DD"
-            style={{ width: "100%" }}
-            defaultValue={dayjs()}
-          />
+          <DatePicker format="YYYY-MM-DD" style={{ width: "100%" }} />
         </Form.Item>
       </Form>
     </Modal>

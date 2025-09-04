@@ -19,13 +19,15 @@ import {
   EyeOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
+import axios from "axios";
 import DashboardLayout from "../components/layouts/dashboard";
+import PaymentModal from "../components/PaymentModal/paymentModal";
 
 const { Option } = Select;
 
 // O‘quvchi interfeysi
 interface Student {
-  _id?: string;
+  _id: string;   // ✅ optional emas
   id: number;
   name: string;
   phone: string;
@@ -34,7 +36,7 @@ interface Student {
   isFrozen?: boolean;
 }
 
-// 🔥 Backend API URL
+
 const API_URL = "https://unco-backend.onrender.com/api/students";
 
 const StudentsPage: React.FC = () => {
@@ -46,6 +48,10 @@ const StudentsPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [viewStudent, setViewStudent] = useState<Student | null>(null);
+
+  // 🔹 To‘lov modal
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
@@ -135,12 +141,36 @@ const StudentsPage: React.FC = () => {
     }
   };
 
-  // Filter
+  // ✅ To‘lov qo‘shish
+  const handleAddPayment = async (values: { price: number; date: string }) => {
+    if (!selectedStudent?._id) return;
+
+    try {
+      const res = await axios.post(
+        "https://unco-backend.onrender.com/api/payments",
+        {
+          studentId: selectedStudent._id,
+          price: values.price,
+          date: values.date,
+        },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      message.success(res.data.message);
+      setPaymentModalOpen(false);
+      fetchStudents();
+    } catch (err) {
+      console.error("To‘lov qo‘shishda xatolik:", err);
+      message.error("To‘lov qo‘shishda xatolik!");
+    }
+  };
+
+  // 🔹 Filter
   const filteredStudents = students.filter((student) =>
     student.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  // Jadval ustunlari
+  // 🔹 Jadval ustunlari
   const columns: ColumnsType<Student> = [
     {
       title: "#",
@@ -154,11 +184,15 @@ const StudentsPage: React.FC = () => {
     {
       title: "To‘lov",
       key: "payment",
-      render: () => (
+      render: (_, record) => (
         <Button
           type="primary"
           size="small"
           className="bg-blue-600 hover:bg-blue-700"
+          onClick={() => {
+            setSelectedStudent(record);
+            setPaymentModalOpen(true);
+          }}
         >
           To‘lov qilish
         </Button>
@@ -232,7 +266,7 @@ const StudentsPage: React.FC = () => {
       <Table<Student>
         columns={columns}
         dataSource={filteredStudents}
-        rowKey="id"
+        rowKey="_id"
         pagination={{ pageSize: 10 }}
         bordered
         loading={loading}
@@ -371,6 +405,13 @@ const StudentsPage: React.FC = () => {
           </Descriptions>
         )}
       </Modal>
+
+    <PaymentModal
+  open={paymentModalOpen}
+  onClose={() => setPaymentModalOpen(false)}
+  onSubmit={handleAddPayment}
+  students={students}
+/>
     </DashboardLayout>
   );
 };

@@ -1,52 +1,79 @@
 "use client";
 
-import { Button, Modal, Table, Form, Input, DatePicker, Select, Space, Typography } from "antd";
-import { useState } from "react";
+import { Button, Modal, Table, Form, Input, Select, Typography, message, Space } from "antd";
+import { useEffect, useState } from "react";
 import DashboardLayout from "../components/layouts/dashboard";
-import moment from "moment";
+import axios from "axios";
 
 const { Title } = Typography;
 
-interface Employee {
-  key: string;
+interface Teacher {
+  _id?: string;
+  key?: string;
   name: string;
+  subject: string;
   phone: string;
-  dob: string;
-  role: "CEO" | "Admin";
+  email: string;
 }
 
-export default function EmployeesPage() {
+export default function TeachersPage() {
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [employees, setEmployees] = useState<Employee[]>([
-    {
-      key: "1",
-      name: "asdfs asdfasd",
-      phone: "+998 (12) 345-67-89",
-      dob: "2009-10-14",
-      role: "CEO",
-    },
-    {
-      key: "2",
-      name: "Ozodbek 11 Gafurov",
-      phone: "+998 (33) 447-22-27",
-      dob: "2005-10-10",
-      role: "CEO",
-    },
-    {
-      key: "3",
-      name: "Alisher Sanayev",
-      phone: "+998 (90) 562-93-05",
-      dob: "2024-06-13",
-      role: "Admin",
-    },
-  ]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null);
+
+  // ✅ API url
+  const API_URL = "https://unco-backend.onrender.com/api/teachers";
+
+  // 🔹 O‘qituvchilarni olish
+  const fetchTeachers = async () => {
+    try {
+      const res = await axios.get(API_URL);
+      setTeachers(res.data);
+    } catch (err) {
+      message.error("O‘qituvchilarni yuklashda xatolik");
+    }
+  };
+
+  useEffect(() => {
+    fetchTeachers();
+  }, []);
+
+  // 🔹 Yangi o‘qituvchi qo‘shish yoki yangilash
+  const handleSubmit = async (values: any) => {
+    try {
+      if (editingTeacher) {
+        // Yangilash
+        const res = await axios.put(`${API_URL}/${editingTeacher._id}`, values);
+        message.success(res.data.message);
+      } else {
+        // Qo‘shish
+        const res = await axios.post(API_URL, values);
+        message.success(res.data.message);
+      }
+      form.resetFields();
+      setIsModalOpen(false);
+      setEditingTeacher(null);
+      fetchTeachers();
+    } catch (err) {
+      message.error("Amalni bajarishda xatolik");
+    }
+  };
+
+  // 🔹 O‘chirish
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await axios.delete(`${API_URL}/${id}`);
+      message.success(res.data.message);
+      fetchTeachers();
+    } catch (err) {
+      message.error("O‘chirishda xatolik");
+    }
+  };
 
   const columns = [
     {
       title: "T/r",
-      dataIndex: "key",
-      key: "key",
       render: (_: any, __: any, index: number) => index + 1,
     },
     {
@@ -55,108 +82,106 @@ export default function EmployeesPage() {
       key: "name",
     },
     {
+      title: "Fan",
+      dataIndex: "subject",
+      key: "subject",
+    },
+    {
       title: "Telefon",
       dataIndex: "phone",
       key: "phone",
     },
     {
-      title: "Tug'ilgan sana",
-      dataIndex: "dob",
-      key: "dob",
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
     },
     {
       title: "Amallar",
       key: "actions",
-      render: () => <span>👁️</span>,
+      render: (_: any, record: Teacher) => (
+        <Space>
+          <Button
+            type="link"
+            onClick={() => {
+              setEditingTeacher(record);
+              form.setFieldsValue(record);
+              setIsModalOpen(true);
+            }}
+          >
+            ✏️
+          </Button>
+          <Button danger type="link" onClick={() => handleDelete(record._id!)}>
+            🗑️
+          </Button>
+        </Space>
+      ),
     },
   ];
-
-  const handleAddEmployee = (values: any) => {
-    const newEmployee: Employee = {
-      key: (employees.length + 1).toString(),
-      name: values.name,
-      phone: values.phone,
-      dob: values.dob.format("YYYY-MM-DD"),
-      role: values.role,
-    };
-
-    setEmployees([...employees, newEmployee]);
-    form.resetFields();
-    setIsModalOpen(false);
-  };
-
-  const ceoData = employees.filter((e) => e.role === "CEO");
-  const adminData = employees.filter((e) => e.role === "Admin");
 
   return (
     <DashboardLayout>
       <div className="flex justify-between items-center mb-6">
-        <Title level={2} className="!mb-0">Xodimlar</Title>
-        <Button type="primary" onClick={() => setIsModalOpen(true)}>
-          + Xodim qo‘shish
+        <Title level={2} className="!mb-0">O‘qituvchilar</Title>
+        <Button
+          type="primary"
+          onClick={() => {
+            form.resetFields();
+            setEditingTeacher(null);
+            setIsModalOpen(true);
+          }}
+        >
+          + O‘qituvchi qo‘shish
         </Button>
       </div>
 
-      <div className="mb-10">
-        <Title level={4}>CEO</Title>
-        <Table
-          columns={columns}
-          dataSource={ceoData}
-          pagination={false}
-          bordered
-        />
-      </div>
-
-      <div>
-        <Title level={4}>Administratorlar</Title>
-        <Table
-          columns={columns}
-          dataSource={adminData}
-          pagination={false}
-          bordered
-        />
-      </div>
+      <Table
+        columns={columns}
+        dataSource={teachers}
+        rowKey="_id"
+        bordered
+      />
 
       {/* Modal */}
       <Modal
-        title="Yangi xodim qo‘shish"
+        title={editingTeacher ? "O‘qituvchini tahrirlash" : "Yangi o‘qituvchi qo‘shish"}
         open={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
+        onCancel={() => {
+          setIsModalOpen(false);
+          setEditingTeacher(null);
+        }}
         onOk={() => form.submit()}
-        okText="Qo‘shish"
+        okText={editingTeacher ? "Yangilash" : "Qo‘shish"}
         cancelText="Bekor qilish"
       >
-        <Form form={form} layout="vertical" onFinish={handleAddEmployee}>
+        <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <Form.Item
             name="name"
             label="Ismi"
-            rules={[{ required: true, message: "Iltimos, ismni kiriting" }]}
+            rules={[{ required: true, message: "Ismni kiriting" }]}
           >
-            <Input placeholder="Masalan: Alisher Sanayev" />
+            <Input placeholder="Masalan: Ali Valiyev" />
+          </Form.Item>
+          <Form.Item
+            name="subject"
+            label="Fan"
+            rules={[{ required: true, message: "Fan nomini kiriting" }]}
+          >
+            <Input placeholder="Masalan: Matematika" />
           </Form.Item>
           <Form.Item
             name="phone"
             label="Telefon"
-            rules={[{ required: true, message: "Telefon raqam kiriting" }]}
+            rules={[{ required: true, message: "Telefon raqamni kiriting" }]}
           >
-            <Input placeholder="+998 (__) ___-__-__" />
+            <Input placeholder="+998901234567" />
           </Form.Item>
           <Form.Item
-            name="dob"
-            label="Tug‘ilgan sana"
-            rules={[{ required: true, message: "Tug‘ilgan sanani tanlang" }]}
+            name="email"
+            label="Email"
+            rules={[{ required: true, type: "email", message: "Emailni to‘g‘ri kiriting" }]}
           >
-            <DatePicker style={{ width: "100%" }} />
-          </Form.Item>
-          <Form.Item
-            name="role"
-            label="Lavozimi"
-            rules={[{ required: true, message: "Lavozimni tanlang" }]}
-          >
-            <Select placeholder="Tanlang">
-              <Select.Option value="CEO">CEO</Select.Option>
-              <Select.Option value="Admin">Admin</Select.Option>
-            </Select>
+            <Input placeholder="ali.valiyev@example.com" />
           </Form.Item>
         </Form>
       </Modal>
