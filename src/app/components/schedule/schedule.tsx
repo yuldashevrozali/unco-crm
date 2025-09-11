@@ -17,8 +17,8 @@ import dayjs from "dayjs";
 
 interface Schedule {
   _id?: string;
-  group: { _id: string; name: string };
-  teacher: { _id: string; name: string };
+  group: { _id?: string; name: string };
+  teacher?: { _id?: string; name: string };
   room: string;
   date: string[];
   time: string;
@@ -39,7 +39,7 @@ const timeSlots: string[] = Array.from({ length: 16 }, (_, i) => {
   return `${hour.toString().padStart(2, "0")}:00`;
 });
 
-const rooms: string[] = ["101", "102", "103", "104", "105", "106"];
+const rooms: string[] = ["1", "2", "3", "4", "5", "6"];
 const days: string[] = [
   "Dushanba",
   "Seshanba",
@@ -107,7 +107,7 @@ const ScheduleTable: React.FC = () => {
         time: values.time.format("HH:mm"),
       };
 
-      if (editingSchedule) {
+      if (editingSchedule?._id) {
         const res = await axios.put(
           `${API_URL}/schedules/${editingSchedule._id}`,
           payload
@@ -148,27 +148,39 @@ const ScheduleTable: React.FC = () => {
     return (
       <Card
         size="small"
-        style={{ backgroundColor: "#1677ff", color: "white", cursor: "pointer" }}
+        style={{
+          backgroundColor: "#1677ff",
+          color: "white",
+          cursor: "pointer",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "6px 10px",
+          height: "100%",
+          fontSize: "14px",
+        }}
         onClick={() => {
           setEditingSchedule(lesson);
           form.setFieldsValue({
-            group: lesson.group._id,
-            teacher: lesson.teacher._id,
+            group: lesson.group?._id,
+            teacher: lesson.teacher?._id,
             room: lesson.room,
             date: lesson.date,
-            time: dayjs(lesson.time, "HH:mm"),
+            time: lesson.time ? dayjs(lesson.time, "HH:mm") : undefined,
           });
           setIsModalOpen(true);
         }}
       >
-        <div>{lesson.group.name}</div>
+        {/* Faqat guruh nomi */}
+        <div>{lesson.group?.name || "No Group"}</div>
+
         <Button
           size="small"
           type="link"
           danger
           onClick={(e) => {
             e.stopPropagation();
-            handleDelete(lesson._id!);
+            if (lesson._id) handleDelete(lesson._id);
           }}
         >
           🗑️
@@ -192,7 +204,12 @@ const ScheduleTable: React.FC = () => {
         {timeSlots.map((time) => (
           <div
             key={time}
-            style={{ padding: 5, textAlign: "center", fontWeight: "bold" }}
+            style={{
+              padding: 8,
+              textAlign: "center",
+              fontWeight: "bold",
+              fontSize: "14px",
+            }}
           >
             {time}
           </div>
@@ -200,11 +217,27 @@ const ScheduleTable: React.FC = () => {
 
         {rooms.map((room) => (
           <React.Fragment key={room}>
-            <div style={{ padding: 5, fontWeight: "bold" }}>{room}</div>
+            <div
+              style={{
+                padding: 8,
+                fontWeight: "bold",
+                fontSize: "14px",
+                textAlign: "center",
+              }}
+            >
+              {room}
+            </div>
             {timeSlots.map((time) => (
               <div
                 key={`${room}-${time}`}
-                style={{ border: "1px solid #ddd", height: 60 }}
+                style={{
+                  border: "1px solid #ddd",
+                  height: 80, // katak balandligi
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 4,
+                }}
               >
                 {renderSchedule(day, room, time)}
               </div>

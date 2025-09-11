@@ -1,4 +1,5 @@
 "use client";
+
 import DashboardLayout from "../components/layouts/dashboard";
 import { Table, Button, Input, message, Tag, Space, Switch } from "antd";
 import { useState, useEffect } from "react";
@@ -43,14 +44,14 @@ export default function PaymentsPage() {
   const [groups, setGroups] = useState<GroupType[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [showDebtors, setShowDebtors] = useState(false); // 🔹 Qarzdor filteri
+  const [showDebtors, setShowDebtors] = useState(false);
 
   // 🔹 O‘quvchilarni olish
   const fetchStudents = async () => {
     setLoading(true);
     try {
       const res = await axios.get("https://unco-backend.onrender.com/api/students");
-      setStudents(res.data);
+      setStudents(res.data || []);
     } catch (err) {
       console.error("O‘quvchilarni olishda xatolik:", err);
       message.error("O‘quvchilarni olishda xatolik");
@@ -59,11 +60,11 @@ export default function PaymentsPage() {
     }
   };
 
-  // 🔹 Guruhlarni olish (narx bilan)
+  // 🔹 Guruhlarni olish
   const fetchGroups = async () => {
     try {
       const res = await axios.get("https://unco-backend.onrender.com/api/groups");
-      setGroups(res.data);
+      setGroups(res.data || []);
     } catch (err) {
       console.error("Guruhlarni olishda xatolik:", err);
     }
@@ -80,8 +81,7 @@ export default function PaymentsPage() {
       const res = await axios.post("https://unco-backend.onrender.com/api/payments", values, {
         headers: { "Content-Type": "application/json" },
       });
-
-      message.success(res.data.message);
+      message.success(res.data.message || "To‘lov qo‘shildi!");
       setModalOpen(false);
       fetchStudents();
     } catch (err) {
@@ -93,12 +93,12 @@ export default function PaymentsPage() {
   // 🔹 Guruh narxini topish
   const getGroupPrice = (groupName: string): number => {
     const group = groups.find((g) => g.name === groupName);
-    return group ? group.price : 0;
+    return group?.price || 0;
   };
 
   // 🔹 Jadval uchun ma’lumot tayyorlash
   const paymentsData = students.map((student) => {
-    const totalPaid = student.payments.reduce((sum, p) => sum + p.price, 0);
+    const totalPaid = student.payments?.reduce((sum, p) => sum + (p.price || 0), 0) || 0;
     const groupPrice = getGroupPrice(student.group);
     const debt = groupPrice - totalPaid;
 
@@ -119,7 +119,6 @@ export default function PaymentsPage() {
       item.group.toLowerCase().includes(searchText.toLowerCase());
 
     const matchesDebt = showDebtors ? item.debt > 0 : true;
-
     return matchesSearch && matchesDebt;
   });
 
@@ -142,7 +141,7 @@ export default function PaymentsPage() {
         item.student,
         item.group,
         `${item.totalPaid.toLocaleString()} so‘m`,
-        `${item.groupPrice.toLocaleString()} so‘m`,
+        item.groupPrice ? `${item.groupPrice.toLocaleString()} so‘m` : "—",
         item.debt > 0 ? `${item.debt.toLocaleString()} so‘m` : "Yo‘q",
       ]),
     });
@@ -164,13 +163,15 @@ export default function PaymentsPage() {
       title: "Umumiy to‘lov",
       dataIndex: "totalPaid",
       key: "totalPaid",
-      render: (amount: number) => `${amount.toLocaleString()} so‘m`,
+      render: (amount: number) =>
+        amount ? `${amount.toLocaleString()} so‘m` : "—",
     },
     {
       title: "Guruh narxi",
       dataIndex: "groupPrice",
       key: "groupPrice",
-      render: (price: number) => `${price.toLocaleString()} so‘m`,
+      render: (price?: number) =>
+        price ? `${price.toLocaleString()} so‘m` : "—",
     },
     {
       title: "Qarzdorlik",
@@ -192,7 +193,6 @@ export default function PaymentsPage() {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-semibold">To‘lovlar</h1>
           <Space>
-            {/* 🔹 Qidiruv */}
             <Input
               placeholder="O‘quvchi yoki guruh bo‘yicha qidirish..."
               prefix={<SearchOutlined />}
@@ -200,22 +200,16 @@ export default function PaymentsPage() {
               onChange={(e) => setSearchText(e.target.value)}
               className="w-72"
             />
-
-            {/* 🔹 Qarzdor filteri */}
             <span>
               Faqat qarzdorlar:{" "}
               <Switch checked={showDebtors} onChange={setShowDebtors} />
             </span>
-
-            {/* 🔹 Eksport tugmalari */}
             <Button icon={<FileExcelOutlined />} onClick={exportToExcel}>
               Excel
             </Button>
             <Button icon={<FilePdfOutlined />} onClick={exportToPDF}>
               PDF
             </Button>
-
-            {/* 🔹 To‘lov qo‘shish */}
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -226,7 +220,6 @@ export default function PaymentsPage() {
           </Space>
         </div>
 
-        {/* Jadval */}
         <Table
           columns={columns}
           dataSource={filteredData}
@@ -234,7 +227,6 @@ export default function PaymentsPage() {
           pagination={{ pageSize: 7 }}
         />
 
-        {/* Modal */}
         <PaymentModal
           open={modalOpen}
           onClose={() => setModalOpen(false)}

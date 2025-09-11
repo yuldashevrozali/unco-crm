@@ -16,6 +16,12 @@ import { useEffect, useState } from "react";
 
 const { Header, Sider, Content } = Layout;
 
+interface User {
+  username: string;
+  role: string;
+  photo?: string;
+}
+
 export default function DashboardLayout({
   children,
 }: {
@@ -24,15 +30,13 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
 
-  const [user, setUser] = useState<{ username: string; role: string } | null>(
-    null
-  );
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
-      setUser(parsed.user); // ✅ faqat user obyektini saqladik
+      setUser(parsed.user);
     }
   }, []);
 
@@ -48,24 +52,18 @@ export default function DashboardLayout({
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem("user"); // foydalanuvchini o‘chirish
+    localStorage.removeItem("user");
     router.push("/signin");
   };
 
   return (
     <Layout className="h-screen">
       {/* Sidebar */}
-      <Sider
-        breakpoint="lg"
-        collapsedWidth="0"
-        className="bg-[#003366] h-screen"
-      >
-        {/* Logo joyi */}
+      <Sider breakpoint="lg" collapsedWidth="0" className="bg-[#003366] h-screen">
         <div className="h-16 flex items-center justify-center text-white text-lg font-bold border-b border-gray-700">
           <span>Learning Center</span>
         </div>
 
-        {/* Menu */}
         <Menu
           theme="dark"
           mode="inline"
@@ -81,40 +79,31 @@ export default function DashboardLayout({
       <Layout>
         {/* Header */}
         <Header className="bg-white shadow flex justify-between items-center px-6 h-16 sticky top-0 z-10">
-          {/* Qidiruv input */}
-          <input
-            type="text"
-            placeholder="Qidirish..."
-            className="w-64 h-9 px-3 text-sm text-gray-700 border border-gray-300 rounded-lg 
-             focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-             placeholder-gray-400 shadow-sm hover:border-gray-400 transition"
-          />
-
           {/* Profil qismi */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 ml-auto">
             <img
-              src="https://i.pravatar.cc/40"
+              src={user?.photo || "https://i.pravatar.cc/100"}
               alt="user"
               className="rounded-full w-10 h-10 border-2 border-indigo-500 shadow-md"
             />
-           <div className="flex flex-col items-start">
-  <span className="text-white font-semibold text-base tracking-wide">
-    {user ? user.username : "Guest"}
-  </span>
-  <span
-    className={`mt-0.5 text-xs font-medium px-2 py-0.5 rounded-full ${
-      user?.role === "director"
-        ? "bg-green-100 text-green-700"
-        : user?.role === "admin"
-        ? "bg-purple-100 text-purple-700"
-        : user?.role === "teacher"
-        ? "bg-blue-100 text-blue-700"
-        : "bg-gray-100 text-gray-600"
-    }`}
-  >
-    {user ? user.role : "no-role"}
-  </span>
-</div>
+            <div className="flex flex-col items-start">
+              <span className="text-white font-semibold text-base tracking-wide">
+                {user ? user.username : "Guest"}
+              </span>
+              <span
+                className={`mt-0.5 text-xs font-medium px-2 py-0.5 rounded-full ${
+                  user?.role === "director"
+                    ? "bg-green-100 text-green-700"
+                    : user?.role === "admin"
+                    ? "bg-purple-100 text-purple-700"
+                    : user?.role === "teacher"
+                    ? "bg-blue-100 text-blue-700"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {user ? user.role : "no-role"}
+              </span>
+            </div>
 
             <Button
               type="primary"

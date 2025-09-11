@@ -1,9 +1,10 @@
 "use client";
 
-import { Button, Modal, Table, Form, Input, Select, Typography, message, Space } from "antd";
+import { Button, Modal, Table, Form, Input, Typography, message, Space } from "antd";
 import { useEffect, useState } from "react";
 import DashboardLayout from "../components/layouts/dashboard";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const { Title } = Typography;
 
@@ -21,6 +22,7 @@ export default function TeachersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null);
+  const router = useRouter();
 
   // ✅ API url
   const API_URL = "https://unco-backend.onrender.com/api/teachers";
@@ -43,11 +45,9 @@ export default function TeachersPage() {
   const handleSubmit = async (values: any) => {
     try {
       if (editingTeacher) {
-        // Yangilash
         const res = await axios.put(`${API_URL}/${editingTeacher._id}`, values);
         message.success(res.data.message);
       } else {
-        // Qo‘shish
         const res = await axios.post(API_URL, values);
         message.success(res.data.message);
       }
@@ -80,6 +80,11 @@ export default function TeachersPage() {
       title: "Ismi",
       dataIndex: "name",
       key: "name",
+      render: (_: any, record: Teacher) => (
+        <Button type="link" onClick={() => router.push(`/employees/${record._id}`)}>
+          {record.name}
+        </Button>
+      ),
     },
     {
       title: "Fan",
