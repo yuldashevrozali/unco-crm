@@ -65,6 +65,8 @@ export default function GroupsPage() {
       setLoading(false);
     }
   };
+  console.log(groups);
+  
 
   const fetchStudents = async () => {
     try {

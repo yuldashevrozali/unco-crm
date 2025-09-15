@@ -1,12 +1,13 @@
 "use client";
 
-import { Button, Modal, Table, Form, Input, Typography, message, Space } from "antd";
+import { Button, Modal, Table, Form, Input, Typography, message, Space, Select } from "antd";
 import { useEffect, useState } from "react";
 import DashboardLayout from "../components/layouts/dashboard";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
 const { Title } = Typography;
+const { Option } = Select;
 
 interface Teacher {
   _id?: string;
@@ -17,11 +18,23 @@ interface Teacher {
   email: string;
 }
 
+interface Group {
+  _id?: string;
+  name: string;
+  date: string[];
+  time: string;
+  teacher: string;
+}
+
 export default function TeachersPage() {
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null);
+
+  const [groupForm] = Form.useForm();
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+
   const router = useRouter();
 
   // ✅ API url
@@ -68,6 +81,18 @@ export default function TeachersPage() {
       fetchTeachers();
     } catch (err) {
       message.error("O‘chirishda xatolik");
+    }
+  };
+
+  // 🔹 Guruh yaratish
+  const handleGroupSubmit = async (values: Group) => {
+    try {
+      const res = await axios.post("https://unco-backend.onrender.com/api/groups", values);
+      message.success("Guruh muvaffaqiyatli yaratildi!");
+      groupForm.resetFields();
+      setIsGroupModalOpen(false);
+    } catch (err) {
+      message.error("Guruh yaratishda xatolik");
     }
   };
 
@@ -128,16 +153,27 @@ export default function TeachersPage() {
     <DashboardLayout>
       <div className="flex justify-between items-center mb-6">
         <Title level={2} className="!mb-0">O‘qituvchilar</Title>
-        <Button
-          type="primary"
-          onClick={() => {
-            form.resetFields();
-            setEditingTeacher(null);
-            setIsModalOpen(true);
-          }}
-        >
-          + O‘qituvchi qo‘shish
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            type="primary"
+            onClick={() => {
+              form.resetFields();
+              setEditingTeacher(null);
+              setIsModalOpen(true);
+            }}
+          >
+            + O‘qituvchi qo‘shish
+          </Button>
+          <Button
+            type="default"
+            onClick={() => {
+              groupForm.resetFields();
+              setIsGroupModalOpen(true);
+            }}
+          >
+            + Guruh yaratish
+          </Button>
+        </div>
       </div>
 
       <Table
@@ -187,6 +223,59 @@ export default function TeachersPage() {
             rules={[{ required: true, type: "email", message: "Emailni to‘g‘ri kiriting" }]}
           >
             <Input placeholder="ali.valiyev@example.com" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Guruh yaratish Modal */}
+      <Modal
+        title="Yangi guruh yaratish"
+        open={isGroupModalOpen}
+        onCancel={() => setIsGroupModalOpen(false)}
+        onOk={() => groupForm.submit()}
+        okText="Yaratish"
+        cancelText="Bekor qilish"
+      >
+        <Form form={groupForm} layout="vertical" onFinish={handleGroupSubmit}>
+          <Form.Item
+            name="name"
+            label="Guruh nomi"
+            rules={[{ required: true, message: "Guruh nomini kiriting" }]}
+          >
+            <Input placeholder="Masalan: React Advanced" />
+          </Form.Item>
+          <Form.Item
+            name="date"
+            label="Kunlar"
+            rules={[{ required: true, message: "Kunlarni tanlang" }]}
+          >
+            <Select mode="multiple" placeholder="Kunlarni tanlang">
+              {["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"].map((day) => (
+                <Option key={day} value={day}>
+                  {day}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="time"
+            label="Vaqt"
+            rules={[{ required: true, message: "Vaqtni kiriting" }]}
+          >
+            <Input placeholder="Masalan: 16:00-18:00" />
+          </Form.Item>
+          <Form.Item
+            name="teacher"
+            label="O‘qituvchi"
+            rules={[{ required: true, message: "O‘qituvchini tanlang" }]}
+          >
+            <Select placeholder="O‘qituvchini tanlang">
+              {teachers.map((teacher) => (
+                <Option key={teacher._id} value={teacher.name}>
+                  {teacher.name}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
         </Form>
       </Modal>
