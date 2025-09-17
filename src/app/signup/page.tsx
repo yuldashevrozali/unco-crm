@@ -17,7 +17,7 @@ export default function Signup() {
   const [error, setError] = useState<string | null>(null);
 
   // ✅ Formani yuborish
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: { username: string; phone: string; password: string; role: string }) => {
     try {
       const res = await fetch("https://unco-backend.onrender.com/api/auth/signup", {
         method: "POST",
@@ -44,8 +44,8 @@ export default function Signup() {
       setTimeout(() => {
         router.push("/signin");
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || "Ro‘yxatdan o‘tishda xatolik!");
+    } catch (err: unknown) {
+      setError((err as Error).message || "Ro‘yxatdan o‘tishda xatolik!");
       setSuccess(false);
     }
   };

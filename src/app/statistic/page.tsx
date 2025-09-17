@@ -15,7 +15,6 @@ interface SaleType {
 }
 
 export default function StatisticPage() {
-  const [sales, setSales] = useState<SaleType[]>([]);
   const [filteredSales, setFilteredSales] = useState<SaleType[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -23,7 +22,6 @@ export default function StatisticPage() {
     setLoading(true);
     try {
       const res = await axios.get("https://unco-backend.onrender.com/api/sales");
-      setSales(res.data || []);
       setFilteredSales(res.data || []);
     } catch {
       message.error("Sotuvlarni yuklashda xatolik");

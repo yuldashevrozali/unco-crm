@@ -43,8 +43,8 @@ export default function Signin() {
       setTimeout(() => {
         router.push("/");
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || "Kirishda xatolik yuz berdi!");
+    } catch (err: unknown) {
+      setError((err as Error).message || "Kirishda xatolik yuz berdi!");
     }
   };
 

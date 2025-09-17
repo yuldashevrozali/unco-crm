@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import {
   Table,
   Button,
@@ -68,8 +68,12 @@ export default function LidlarPage() {
       setIsAddModalOpen(false);
       addForm.resetFields();
       fetchLeads();
-    } catch (err: any) {
-      message.error(err.response?.data?.message || "❌ Lead qo‘shishda xatolik!");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        message.error(err.response?.data?.message || "❌ Lead qo‘shishda xatolik!");
+      } else {
+        message.error("❌ Lead qo‘shishda xatolik!");
+      }
     }
   };
 
@@ -88,8 +92,12 @@ export default function LidlarPage() {
       message.success("✅ Lead yangilandi!");
       setIsModalOpen(false);
       fetchLeads();
-    } catch (err: any) {
-      message.error(err.response?.data?.message || "❌ Xatolik yuz berdi!");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        message.error(err.response?.data?.message || "❌ Xatolik yuz berdi!");
+      } else {
+        message.error("❌ Xatolik yuz berdi!");
+      }
     }
   };
 
@@ -99,9 +107,14 @@ export default function LidlarPage() {
       await axios.put(`${API_URL}/${id}`, { status });
       message.success(`Lead holati "${status}" ga o‘zgartirildi!`);
       fetchLeads();
-    } catch (err: any) {
-      console.error("Status update error:", err.response?.data || err);
-      message.error(err.response?.data?.message || "❌ Holatni o‘zgartirishda xatolik!");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        console.error("Status update error:", err.response?.data || err);
+        message.error(err.response?.data?.message || "❌ Holatni o‘zgartirishda xatolik!");
+      } else {
+        console.error("Status update error:", err);
+        message.error("❌ Holatni o‘zgartirishda xatolik!");
+      }
     }
   };
 
@@ -111,8 +124,12 @@ export default function LidlarPage() {
       await axios.delete(`${API_URL}/${id}`);
       message.success("🗑️ Lead o‘chirildi!");
       fetchLeads();
-    } catch (err: any) {
-      message.error(err.response?.data?.message || "❌ Leadni o‘chirishda xatolik!");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        message.error(err.response?.data?.message || "❌ Leadni o‘chirishda xatolik!");
+      } else {
+        message.error("❌ Leadni o‘chirishda xatolik!");
+      }
     }
   };
 
@@ -143,7 +160,7 @@ export default function LidlarPage() {
     {
       title: "Amallar",
       key: "actions",
-      render: (_: any, record: Lead) => (
+      render: (_: unknown, record: Lead) => (
         <Space>
           <Button type="primary" onClick={() => updateStatus(record._id, "converted")}>
             Qabul qilish

@@ -1,8 +1,15 @@
 // components/Receipt/Receipt.tsx
 import { forwardRef } from "react";
 
+interface Payment {
+  student: string;
+  group: string;
+  price: number;
+  date: string;
+}
+
 interface ReceiptProps {
-  payment: any;
+  payment: Payment;
 }
 
 const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ payment }, ref) => {
@@ -19,5 +26,7 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ payment }, ref) => {
     </div>
   );
 });
+
+Receipt.displayName = "Receipt";
 
 export default Receipt;

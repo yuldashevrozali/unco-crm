@@ -72,7 +72,7 @@ const StudentsPage: React.FC = () => {
     try {
       const res = await axios.get(`${API_BASE}/students`);
       setStudents(res.data);
-    } catch (err) {
+    } catch {
       message.error("Studentlarni olishda xatolik!");
     } finally {
       setLoading(false);

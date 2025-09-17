@@ -34,6 +34,14 @@ interface Teacher {
   name: string;
 }
 
+interface FormValues {
+  group: string;
+  teacher: string;
+  room: string;
+  date: string[];
+  time: dayjs.Dayjs;
+}
+
 const timeSlots: string[] = Array.from({ length: 16 }, (_, i) => {
   const hour = i + 5;
   return `${hour.toString().padStart(2, "0")}:00`;
@@ -97,7 +105,7 @@ const ScheduleTable: React.FC = () => {
   }, []);
 
   // 🔹 Qo‘shish / Tahrirlash
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: FormValues) => {
     try {
       const payload = {
         group: values.group,

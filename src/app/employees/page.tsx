@@ -26,6 +26,13 @@ interface Group {
   teacher: string;
 }
 
+interface FormValues {
+  name: string;
+  subject: string;
+  phone: string;
+  email: string;
+}
+
 export default function TeachersPage() {
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,7 +52,7 @@ export default function TeachersPage() {
     try {
       const res = await axios.get(API_URL);
       setTeachers(res.data);
-    } catch (err) {
+    } catch {
       message.error("O‘qituvchilarni yuklashda xatolik");
     }
   };
@@ -55,7 +62,7 @@ export default function TeachersPage() {
   }, []);
 
   // 🔹 Yangi o‘qituvchi qo‘shish yoki yangilash
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: FormValues) => {
     try {
       if (editingTeacher) {
         const res = await axios.put(`${API_URL}/${editingTeacher._id}`, values);
@@ -68,7 +75,7 @@ export default function TeachersPage() {
       setIsModalOpen(false);
       setEditingTeacher(null);
       fetchTeachers();
-    } catch (err) {
+    } catch {
       message.error("Amalni bajarishda xatolik");
     }
   };
@@ -79,7 +86,7 @@ export default function TeachersPage() {
       const res = await axios.delete(`${API_URL}/${id}`);
       message.success(res.data.message);
       fetchTeachers();
-    } catch (err) {
+    } catch {
       message.error("O‘chirishda xatolik");
     }
   };
@@ -91,7 +98,7 @@ export default function TeachersPage() {
       message.success("Guruh muvaffaqiyatli yaratildi!");
       groupForm.resetFields();
       setIsGroupModalOpen(false);
-    } catch (err) {
+    } catch {
       message.error("Guruh yaratishda xatolik");
     }
   };
@@ -99,13 +106,13 @@ export default function TeachersPage() {
   const columns = [
     {
       title: "T/r",
-      render: (_: any, __: any, index: number) => index + 1,
+      render: (_: unknown, __: unknown, index: number) => index + 1,
     },
     {
       title: "Ismi",
       dataIndex: "name",
       key: "name",
-      render: (_: any, record: Teacher) => (
+      render: (_: unknown, record: Teacher) => (
         <Button type="link" onClick={() => router.push(`/employees/${record._id}`)}>
           {record.name}
         </Button>
@@ -129,7 +136,7 @@ export default function TeachersPage() {
     {
       title: "Amallar",
       key: "actions",
-      render: (_: any, record: Teacher) => (
+      render: (_: unknown, record: Teacher) => (
         <Space>
           <Button
             type="link"

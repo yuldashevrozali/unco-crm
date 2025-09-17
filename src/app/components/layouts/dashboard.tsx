@@ -11,6 +11,7 @@ import {
   LogoutOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -81,9 +82,11 @@ export default function DashboardLayout({
         <Header className="bg-white shadow flex justify-between items-center px-6 h-16 sticky top-0 z-10">
           {/* Profil qismi */}
           <div className="flex items-center space-x-4 ml-auto">
-            <img
+            <Image
               src={user?.photo || "https://i.pravatar.cc/100"}
               alt="user"
+              width={40}
+              height={40}
               className="rounded-full w-10 h-10 border-2 border-indigo-500 shadow-md"
             />
             <div className="flex flex-col items-start">

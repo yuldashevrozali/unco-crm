@@ -134,6 +134,7 @@ export default function PaymentsPage() {
   const exportToPDF = () => {
     const doc = new jsPDF();
     doc.text("To‘lovlar ro‘yxati", 14, 10);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (doc as any).autoTable({
       startY: 20,
       head: [["O‘quvchi", "Guruh", "Umumiy to‘lov", "Guruh narxi", "Qarzdorlik"]],
