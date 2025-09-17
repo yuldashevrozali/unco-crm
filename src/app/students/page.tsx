@@ -20,7 +20,7 @@ import {
   DeleteOutlined,
   PauseCircleOutlined,
 } from "@ant-design/icons";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import Link from "next/link";
 import dayjs from "dayjs";
 import DashboardLayout from "@/app/components/layouts/dashboard";
@@ -84,7 +84,7 @@ const StudentsPage: React.FC = () => {
     try {
       const res = await axios.get(`${API_BASE}/groups`);
       setGroups(res.data);
-    } catch (err) {
+    } catch {
       message.error("Guruhlarni olishda xatolik!");
     }
   };
@@ -94,7 +94,7 @@ const StudentsPage: React.FC = () => {
     try {
       const res = await axios.get(`${API_BASE}/teachers`);
       setTeachers(res.data);
-    } catch (err) {
+    } catch {
       message.error("O‘qituvchilarni olishda xatolik!");
     }
   };
@@ -141,9 +141,14 @@ const StudentsPage: React.FC = () => {
       setEditingStudent(null);
       form.resetFields();
       fetchStudents();
-    } catch (err: any) {
-      console.error("Xatolik:", err.response?.data || err.message);
-      message.error(err.response?.data?.message || "Amaliyotda xatolik!");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        console.error("Xatolik:", err.response?.data || err.message);
+        message.error(err.response?.data?.message || "Amaliyotda xatolik!");
+      } else {
+        console.error("Xatolik:", err);
+        message.error("Amaliyotda xatolik!");
+      }
     }
   };
 
@@ -153,7 +158,7 @@ const StudentsPage: React.FC = () => {
       const res = await axios.delete(`${API_BASE}/students/${id}`);
       message.success(res.data.message || "Student o‘chirildi!");
       fetchStudents();
-    } catch (err) {
+    } catch {
       message.error("O‘chirishda xatolik!");
     }
   };
@@ -177,7 +182,7 @@ const StudentsPage: React.FC = () => {
       setIsFreezeModalOpen(false);
       freezeForm.resetFields();
       fetchStudents();
-    } catch (err) {
+    } catch {
       message.error("Muzlatishda xatolik!");
     }
   };

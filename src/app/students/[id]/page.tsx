@@ -40,7 +40,7 @@ export default function StudentDetailPage() {
         `https://unco-backend.onrender.com/api/students/${id}`
       );
       setStudent(data);
-    } catch (err) {
+    } catch {
       setError("❌ O‘quvchini olishda xatolik yuz berdi. Qayta urinib ko‘ring.");
     } finally {
       setLoading(false);
