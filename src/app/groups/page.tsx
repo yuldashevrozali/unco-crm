@@ -187,8 +187,7 @@ export default function GroupsPage() {
               {
                 title: "👨‍🏫 Ustoz",
                 dataIndex: "teacher",
-                render: (id) =>
-                  teachers.find((t) => t._id === id)?.name || "—",
+                render: (teacher: string) => teacher || "—",
               },
               {
                 title: "👨‍🎓 O‘quvchilar",
