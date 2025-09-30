@@ -11,6 +11,9 @@ import {
   message,
   Spin,
   Alert,
+  Descriptions,
+  Typography,
+  Space,
 } from "antd";
 import {
   PlusOutlined,
@@ -51,6 +54,8 @@ export default function GroupsPage() {
   const [error, setError] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
 
   const [form] = Form.useForm<Group>();
 
@@ -137,6 +142,16 @@ export default function GroupsPage() {
     form.resetFields();
   };
 
+  const handleOpenDetailModal = (group: Group) => {
+    setSelectedGroup(group);
+    setDetailModalOpen(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setDetailModalOpen(false);
+    setSelectedGroup(null);
+  };
+
   // 🔹 O‘chirish
   const handleDelete = async (id: string) => {
     if (!confirm("Rostdan ham ushbu guruhni o‘chirmoqchimisiz?")) return;
@@ -177,7 +192,19 @@ export default function GroupsPage() {
             rowKey="_id"
             dataSource={groups}
             columns={[
-              { title: "📌 Guruh nomi", dataIndex: "name" },
+              {
+                title: "📌 Guruh nomi",
+                dataIndex: "name",
+                render: (name: string, record: Group) => (
+                  <Button
+                    type="link"
+                    onClick={() => handleOpenDetailModal(record)}
+                    style={{ padding: 0 }}
+                  >
+                    {name}
+                  </Button>
+                ),
+              },
               {
                 title: "📅 Kunlar",
                 dataIndex: "date", // 🔹 endi date
@@ -287,6 +314,42 @@ export default function GroupsPage() {
               </Select>
             </Form.Item>
           </Form>
+        </Modal>
+
+        {/* Detail Modal */}
+        <Modal
+          open={detailModalOpen}
+          onCancel={handleCloseDetailModal}
+          footer={null}
+          width={600}
+          title="📚 Guruh tafsilotlari"
+        >
+          {selectedGroup && (
+            <Space direction="vertical" size="large" className="w-full">
+              <Typography.Title level={4}>👥 {selectedGroup.name}</Typography.Title>
+
+              <Descriptions bordered column={1}>
+                <Descriptions.Item label="📅 Hafta kunlari">
+                  {selectedGroup.date.join(", ")}
+                </Descriptions.Item>
+                <Descriptions.Item label="⏰ Vaqt">
+                  {selectedGroup.time}
+                </Descriptions.Item>
+                <Descriptions.Item label="👨‍🏫 Ustoz">
+                  {teachers.find(t => t._id === selectedGroup.teacher)?.name || "—"} ({teachers.find(t => t._id === selectedGroup.teacher)?.subject || ""})
+                </Descriptions.Item>
+                <Descriptions.Item label="👨‍🎓 O‘quvchilar">
+                  {selectedGroup.students.length > 0
+                    ? selectedGroup.students.map(id => students.find(s => s._id === id)?.name).filter(Boolean).join(", ")
+                    : "O‘quvchilar yo‘q"
+                  }
+                </Descriptions.Item>
+                <Descriptions.Item label="📊 O‘quvchilar soni">
+                  {selectedGroup.students.length} ta
+                </Descriptions.Item>
+              </Descriptions>
+            </Space>
+          )}
         </Modal>
       </div>
     </DashboardLayout>
